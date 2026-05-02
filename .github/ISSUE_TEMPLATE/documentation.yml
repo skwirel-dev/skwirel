@@ -1,0 +1,28 @@
+name: Documentation improvement
+description: Improve documentation
+title: '[Docs]: '
+labels: ['documentation']
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: Current Documentation
+      description: What is currently wrong or missing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed Changes
+      description: What should the documentation say?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I agree to follow this project's contributing guidelines
+          required: true

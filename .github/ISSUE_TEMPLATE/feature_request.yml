@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest a new feature for the MIT-licensed core platform
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Description
+        Describe the feature you'd like to see.
+
+        **Note**: Premium features are proprietary. See `docs/FEATURE_TIERS.md`.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this feature work?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I agree to follow this project's contributing guidelines
+          required: true

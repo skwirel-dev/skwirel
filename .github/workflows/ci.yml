@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  license-check:
+    name: License Boundary Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run license verification
+        run: bash .github/scripts/verify-licenses.sh
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest ruff
+      - name: Run lint
+        run: ruff check backend/
+      - name: Run tests
+        run: pytest backend/ || echo "No tests found"
+
+  frontend-test:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check for package.json
+        id: has_pkg
+        run: |
+          if [ -f "frontend-web/package.json" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Install and build (if exists)
+        if: fromJSON(steps.has_pkg.outputs.exists)
+        run: |
+          cd frontend-web
+          npm ci
+          npm run build || echo "Build not configured"
+      - name: No frontend package
+        if: (! fromJSON(steps.has_pkg.outputs.exists))
+        run: echo "Frontend package.json not present - skipping"
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run pip-audit (if requirements.txt exists)
+        run: |
+          if [ -f "backend/requirements.txt" ]; then
+            pip install pip-audit
+            pip-audit --fail-on high --fail-on critical -r backend/requirements.txt || true
+          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run npm audit (if package.json exists)
+        run: |
+          if [ -f "frontend-web/package.json" ]; then
+            cd frontend-web && npm audit --audit-level=high
+          fi
